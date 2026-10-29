@@ -1,6 +1,6 @@
 
 import httpx
-from sqlalchemy.dialects.sqlite import insert
+from sqlalchemy.dialects.postgresql import insert
 
 from database import SessionLocal
 from models import HistoricalOutturn
@@ -23,48 +23,63 @@ async def collect_outturn():
     if not isinstance(records, list):
         raise ValueError("Unexpected Elexon response format")
 
+    valid_records = []
+
+    for item in records:
+        start_time = item.get("startTime")
+        settlement_date = item.get("settlementDate")
+        settlement_period = item.get("settlementPeriod")
+        generation = item.get("generation")
+
+        if (
+            not start_time
+            or not settlement_date
+            or settlement_period is None
+            or generation is None
+        ):
+            continue
+
+        valid_records.append({
+            "settlement_date": settlement_date,
+            "settlement_period": settlement_period,
+            "start_time": start_time,
+            "fuel_type": item.get("fuelType", "WIND"),
+            "generation": generation,
+        })
+
+    if not valid_records:
+        print("No valid outturn records to save.")
+        return
+
     db = SessionLocal()
 
     try:
-        for item in records:
-            start_time = item.get("startTime")
-            settlement_date = item.get("settlementDate")
-            settlement_period = item.get("settlementPeriod")
+        for record in valid_records:
+            stmt = insert(HistoricalOutturn).values(**record)
 
-            if (
-                not start_time
-                or not settlement_date
-                or settlement_period is None
-                or item.get("generation") is None
-            ):
-                continue
-
-            statement = insert(HistoricalOutturn).values(
-                settlement_date=settlement_date[:10],
-                settlement_period=settlement_period,
-                start_time=start_time,
-                fuel_type="WIND",
-                generation=item["generation"],
-            )
-
-            statement = statement.on_conflict_do_update(
+            stmt = stmt.on_conflict_do_update(
                 index_elements=[
                     "settlement_date",
                     "settlement_period",
                     "fuel_type",
                 ],
                 set_={
-                    "start_time": start_time,
-                    "generation": item["generation"],
+                    "start_time": stmt.excluded.start_time,
+                    "generation": stmt.excluded.generation,
                 },
             )
 
-            db.execute(statement)
+            db.execute(stmt)
 
         db.commit()
+        print(
+            f"Successfully saved or updated "
+            f"{len(valid_records)} wind outturn records."
+        )
 
     except Exception:
         db.rollback()
         raise
+
     finally:
         db.close()
