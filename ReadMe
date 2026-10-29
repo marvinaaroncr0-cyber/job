@@ -1,0 +1,243 @@
+# Wind Energy Generation Dashboard
+
+A web-based dashboard for monitoring wind energy generation in Great Britain. The application retrieves actual wind generation and forecast data from the Elexon BMRS API and provides historical data analysis through an interactive line graph.
+
+## Features
+
+- **Wind Generation Outturn:** View actual wind energy generation data.
+- **Wind Generation Forecast:** Retrieve and display forecast wind generation data.
+- **Historical Outturn:** Search historical wind generation records using a custom date range.
+- **Interactive Line Graph:** Visualize historical wind generation in megawatts (MW) over time.
+- **One-Month Filter:** Quickly retrieve historical records covering the previous calendar month up to the current date.
+- **REST API Backend:** Use FastAPI to retrieve, process, and serve energy data.
+- **Data Caching:** Store cached API responses using SQLite to reduce unnecessary external API requests.
+- **Historical Data Storage:** Use a database to store historical outturn records for later analysis.
+- **Responsive Interface:** Display energy data in tables and graphical visualizations.
+
+## Technology Stack
+
+### Frontend
+- React
+- Vite
+- JavaScript
+- Recharts
+- Axios
+- React Router
+- CSS
+
+### Backend
+- Python
+- FastAPI
+- SQLAlchemy
+- SQLite
+- Uvicorn
+- APScheduler
+
+### Data Source
+- Elexon BMRS API — https://bmrs.elexon.co.uk/
+
+## Project Structure
+
+The project is organized into a frontend and backend:
+
+```text
+wind-energy-dashboard/
+├── backend/
+│   ├── main.py
+│   ├── requirements.txt
+│   └── database files
+│
+└── frontend/
+    ├── src/
+    │   ├── App.jsx
+    │   ├── App.css
+    │   ├── index.css
+    │   ├── main.jsx
+    │   ├── pages/
+    │   │   └── WindGeneration.jsx
+    │   └── services/
+    │       └── energyApi.jsx
+    ├── package.json
+    └── vite.config.js
+```
+
+*Note: The structure above is illustrative. Adjust the folder and file names to match your actual repository.*
+
+## Requirements
+
+Before running the application, install:
+
+- Python 3.10 or later, compatible with your backend dependencies.
+- Node.js and npm.
+- Git (optional, for version control).
+
+## Installation and Setup
+
+### 1. Clone the Repository
+
+```bash
+git clone <your-repository-url>
+cd <your-repository-folder>
+```
+
+Replace the placeholders with your repository URL and folder name.
+
+### 2. Set Up the Backend
+
+Navigate to the backend directory:
+
+```bash
+cd backend
+```
+
+Create a virtual environment:
+
+```bash
+python -m venv venv
+```
+
+Activate it on Windows:
+
+```bash
+venv\Scripts\activate
+```
+
+Activate it on Linux or macOS:
+
+```bash
+source venv/bin/activate
+```
+
+Install the Python dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+Start the FastAPI server:
+
+```bash
+uvicorn main:app --reload
+```
+
+The backend should now be available at:
+
+- API base URL: http://127.0.0.1:8000
+- Interactive API documentation: http://127.0.0.1:8000/docs
+
+Keep the backend terminal running while using the frontend.
+
+### 3. Set Up the Frontend
+
+Open a second terminal and navigate to the frontend directory:
+
+```bash
+cd frontend
+```
+
+Install the JavaScript dependencies:
+
+```bash
+npm install
+```
+
+If Recharts, Axios, or React Router are not already installed, run:
+
+```bash
+npm install recharts axios react-router-dom
+```
+
+Start the Vite development server:
+
+```bash
+npm run dev
+```
+
+Open the local URL displayed in your terminal, typically:
+
+http://localhost:5173
+
+## API Endpoints
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/outturn` | Retrieves actual wind generation data. |
+| GET | `/forecast` | Retrieves wind generation forecast data. |
+| GET | `/outturn/history?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD` | Retrieves historical wind generation for a specified date range. |
+
+Example historical data request:
+
+```text
+http://127.0.0.1:8000/outturn/history?start_date=2026-10-01&end_date=2026-10-29
+```
+
+The historical endpoint uses the dates supplied in the query parameters.
+
+## How the Application Works
+
+### Actual Wind Generation
+
+The backend retrieves actual wind generation data from the Elexon BMRS API, processes the response, and makes the resulting data available to the React frontend.
+
+### Forecast Wind Generation
+
+The application retrieves wind generation forecasts and displays the relevant generation values and timestamps.
+
+### Historical Outturn Analysis
+
+Users can select a start date and end date to retrieve historical wind generation records from the backend database.
+
+The application displays the returned records in a table and plots generation values against time using a Recharts line chart.
+
+### One-Month History Filter
+
+The one-month filter automatically selects a date range from one calendar month before the current date through today. It then requests the corresponding historical records and updates the graph and table.
+
+The available results depend on the historical records stored in the database.
+
+## Data Management
+
+The backend uses SQLAlchemy for database operations and SQLite for local caching and data storage.
+
+A background scheduler can collect recent outturn data periodically. To support meaningful historical analysis, the collection process must save the relevant records to the historical database table.
+
+Historical records will not appear automatically unless the collection process has populated the database or historical data has otherwise been imported.
+
+## Troubleshooting
+
+**The frontend cannot connect to the backend**
+- Confirm that the FastAPI server is running.
+- Check that the frontend API service uses `http://127.0.0.1:8000`.
+- Verify that CORS allows requests from `http://localhost:5173`.
+
+**The history table or graph is empty**
+- Check whether the historical database contains records.
+- Test the history endpoint using the interactive API documentation at `/docs`.
+- Confirm that the response contains generation values and timestamps in the expected format.
+
+**The graph does not display**
+- Ensure Recharts is installed.
+- Confirm that the response contains a numeric `generation` value for each record.
+- Check the browser console for JavaScript errors.
+
+**The API returns an error**
+- Check the backend terminal for exceptions.
+- Verify the requested date format is `YYYY-MM-DD`.
+- Confirm that the backend dependencies are installed correctly.
+
+## Future Improvements
+
+Potential enhancements include:
+
+- Live updates and automatic chart refreshes.
+- Historical generation comparisons across multiple periods.
+- Downloading historical data as CSV.
+- Additional generation metrics and statistical summaries.
+- Improved chart filtering and zoom controls.
+
+## Acknowledgements
+
+- [Elexon BMRS](https://bmrs.elexon.co.uk/) for electricity market data.
+- [FastAPI](https://fastapi.tiangolo.com/) for the backend framework.
+- [React](https://react.dev/) for the frontend library.
+- [Recharts](https://recharts.org/) for data visualization.
