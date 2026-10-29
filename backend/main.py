@@ -183,7 +183,6 @@ def transform_forecast(data: list):
     ]
 
 @app.get("/outturn")
-@app.get("/api/outturn")
 async def get_outturn():
     return await fetch_energy_data(
         key="outturn",
@@ -203,7 +202,6 @@ def get_db():
     finally:
         db.close()
 @app.get("/outturn/history")
-@app.get("/api/outturn/history")
 def get_outturn_history(
     start_date: date,
     end_date: date,
@@ -244,7 +242,6 @@ def get_outturn_history(
 
 
 @app.get("/forecast")
-@app.get("/api/forecast")
 async def get_forecast():
     return await fetch_energy_data(
         key="forecast",

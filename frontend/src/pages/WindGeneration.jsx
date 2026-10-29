@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
@@ -22,12 +21,22 @@ function WindGeneration() {
           getForecast(),
         ])
 
+        if (!Array.isArray(outturnData) || !Array.isArray(forecastData)) {
+          throw new Error('The energy API returned an unexpected data format.')
+        }
+
         setOutturn(outturnData)
         setForecast(forecastData)
+        setError('')
       } catch (err) {
+        console.error('Failed to load wind generation data:', err)
+
+        const detail = err.response?.data?.detail
+
         setError(
-          err.response?.data?.detail ||
-          'Unable to load wind generation data.'
+          typeof detail === 'string'
+            ? detail
+            : err.message || 'Unable to load wind generation data.'
         )
       } finally {
         setLoading(false)
@@ -39,12 +48,11 @@ function WindGeneration() {
 
   return (
     <main className="generation-page">
-    <div className="back-button-container">
+      <div className="back-button-container">
         <button onClick={() => navigate('/')} className="back-button">
-        ← Back
-      </button>
-    </div>
-      
+          ← Back
+        </button>
+      </div>
 
       <h1>Wind Generation</h1>
 
@@ -55,8 +63,8 @@ function WindGeneration() {
         <>
           <section>
             <h2 className="section-title">
-                <span className="title-icon">⚡</span>
-                Wind Generation Outturn
+              <span className="title-icon">⚡</span>
+              Wind Generation Outturn
             </h2>
 
             {outturn.length === 0 ? (
@@ -64,69 +72,69 @@ function WindGeneration() {
             ) : (
               <div className="table-container">
                 <table className="outturn-table">
-                    <thead>
+                  <thead>
                     <tr>
-                        <th className="date-column">Date</th>
-                        <th className="time-column">Time</th>
-                        <th className="generation-column">Generation (MW)</th>
+                      <th className="date-column">Date</th>
+                      <th className="time-column">Time</th>
+                      <th className="generation-column">Generation (MW)</th>
                     </tr>
-                    </thead>
+                  </thead>
 
-                    <tbody>
+                  <tbody>
                     {outturn.map((item, index) => (
-                        <tr
+                      <tr
                         key={`${item.settlementDate}-${item.settlementperiod}-${index}`}
-                        >
+                      >
                         <td className="date-column">{item.settlementDate}</td>
                         <td className="time-column">{item.startTime}</td>
                         <td className="generation-column">
-                            {item.generation ?? '—'}
+                          {item.generation ?? '—'}
                         </td>
-                        </tr>
+                      </tr>
                     ))}
-                    </tbody>
+                  </tbody>
                 </table>
-                </div>
+              </div>
             )}
           </section>
 
           <section>
-           <h2 className="section-title">
-                <span className="title-icon">🌬️</span>
-                Wind Generation Forecast
+            <h2 className="section-title">
+              <span className="title-icon">🌬️</span>
+              Wind Generation Forecast
             </h2>
 
             {forecast.length === 0 ? (
               <p>No forecast readings available.</p>
             ) : (
               <div className="table-container">
-                <div className="table-container">
                 <table className="forecast-table">
-                    <thead>
+                  <thead>
                     <tr>
-                        <th className="forecast-date">Forecast Date</th>
-                        <th className="forecast-time">Forecast Time</th>
-                        <th className="forecast-generation">Generation (MW)</th>
-                        <th className="published-date">Published Date</th>
-                        <th className="published-time">Published Time</th>
+                      <th className="forecast-date">Forecast Date</th>
+                      <th className="forecast-time">Forecast Time</th>
+                      <th className="forecast-generation">Generation (MW)</th>
+                      <th className="published-date">Published Date</th>
+                      <th className="published-time">Published Time</th>
                     </tr>
-                    </thead>
+                  </thead>
 
-                    <tbody>
+                  <tbody>
                     {forecast.map((item, index) => (
-                        <tr key={`${item.startdate}-${item.startTime}-${index}`}>
+                      <tr
+                        key={`${item.startdate}-${item.startTime}-${index}`}
+                      >
                         <td className="forecast-date">{item.startdate}</td>
                         <td className="forecast-time">{item.startTime}</td>
                         <td className="forecast-generation">
-                            {item.generation ?? '—'}
+                          {item.generation ?? '—'}
                         </td>
                         <td className="published-date">{item.publishdate}</td>
                         <td className="published-time">{item.publishTime}</td>
-                        </tr>
+                      </tr>
                     ))}
-                    </tbody>
+                  </tbody>
                 </table>
-                </div>
               </div>
             )}
           </section>
