@@ -13,7 +13,7 @@ A web-based dashboard for monitoring wind energy generation in Great Britain. Th
 - **Data Caching:** Store cached API responses using SQLite to reduce unnecessary external API requests.
 - **Historical Data Storage:** Use a database to store historical outturn records for later analysis.
 - **Responsive Interface:** Display energy data in tables and graphical visualizations.
-
+youtbe walkthrough-https://youtu.be/_V8NJA211I0
 ## Technology Stack
 
 ### Frontend
