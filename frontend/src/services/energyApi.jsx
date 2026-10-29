@@ -6,6 +6,7 @@ const api = axios.create({
   timeout: 20000,
 })
 
+
 // Fetch actual wind generation
 export async function getOutturn() {
   const response = await api.get('/outturn')
